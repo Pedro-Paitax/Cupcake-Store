@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CardapioCupCake.Core.View.CardapioPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="White"
+             xmlns:controles="clr-namespace:CardapioCupCake.Core.UI.Componentes"
+             Title="CardapioPage">
+    <Grid RowDefinitions="Auto, *, Auto" BackgroundColor="#F6F6F6">
+
+        <VerticalStackLayout Grid.Row="0"
+                         Padding="20,30,20,15"
+                         VerticalOptions="Start"
+                         BackgroundColor="White">
+
+            <Label Text="🧁 CUPCAKE BAKERY"
+               FontSize="22"
+               HorizontalOptions="Center"
+               FontAttributes="Bold"
+               TextColor="#E91E63" 
+               Margin="0,0,0,10"/>
+
+            <HorizontalStackLayout Spacing="4"
+                               HorizontalOptions="Center">
+                <Label Text="Olá," 
+                   FontSize="16" 
+                   TextColor="#555" />
+                <Label Text="Fulano de Tal" 
+                   FontSize="16" 
+                   FontAttributes="Bold" 
+                   TextColor="#E91E63" />
+            </HorizontalStackLayout>
+
+            <Label Text="O que vamos adoçar hoje?"
+               FontSize="14"
+               HorizontalOptions="Center"
+               TextColor="#888"
+               Margin="0,5,0,0"/>
+        </VerticalStackLayout>
+
+        <CollectionView Grid.Row="1"
+                         x:Name="CupCakeCollection"
+                    BackgroundColor="Transparent"
+                    ItemsSource="{Binding Cupcakes}"
+                    SelectedItem="{Binding SelectedItem}"
+                    SelectionChangedCommand="{Binding EditCupCakeCommand}" 
+                    SelectionChangedCommandParameter="{Binding SelectedItem, Mode=TwoWay, Source={x:Reference CupCakeCollection}}"
+                    SelectionMode="Single"
+                    Margin="10,20,10,0">
+
+            <CollectionView.ItemsLayout>
+                <GridItemsLayout Orientation="Vertical" 
+                             Span="2" 
+                             HorizontalItemSpacing="10"
+                             VerticalItemSpacing="10"/>
+            </CollectionView.ItemsLayout>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border StrokeShape="RoundRectangle 20"
+                        BackgroundColor="White"
+                            
+                        StrokeThickness="0"
+                        Padding="15">
+                        <VerticalStackLayout Spacing="8">
+                            <Border StrokeShape="RoundRectangle 15" 
+                                    Padding="0" 
+                                    HeightRequest="120"
+                                    WidthRequest="120"
+                                    Stroke="#ddd"
+                                    BackgroundColor="Transparent">
+
+                                <Image Source="{Binding Image}" 
+                                       HeightRequest="120" 
+                                       Aspect="AspectFill"
+                                       HorizontalOptions="Center"
+                                       WidthRequest="120" />
+                            </Border>
+                            <Label Text="{Binding Name}" 
+                               FontSize="15" 
+                               FontAttributes="Bold" 
+                               TextColor="#333" 
+                               HorizontalOptions="Center"
+                               Margin="0,5,0,0"/>
+                            <Label Text="{Binding Price, StringFormat='R$ {0:F2}'}" 
+                               TextColor="#FF3F6F" 
+                               FontAttributes="Bold"
+                               FontSize="16"
+                               HorizontalOptions="Center" />
+                        </VerticalStackLayout>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <controles:MenuComp Grid.Row="2"
+                        VerticalOptions="End"
+                        Margin="0,0,0,0"/>
+    </Grid>
+</ContentPage>
