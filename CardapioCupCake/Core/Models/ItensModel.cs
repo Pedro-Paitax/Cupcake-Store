@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace CardapioCupCake.Core.Models
 {
     public class ItensModel
     {
-        public CupcakeModel Item { get; set; } 
+        public CupcakeModel Item { get; set; } = new();
         public int Quantity { get; set; }
 
         public double TotalPrice => Quantity * Item.Price;
 
         public string DisplayName => $"{Quantity}x {Item.Name}";
-        public string DisplayTotal => TotalPrice.ToString("C2");
+        public string DisplayTotal => TotalPrice.ToString("C2", new CultureInfo("pt-BR"));
     }
 }

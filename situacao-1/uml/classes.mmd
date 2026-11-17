@@ -1,0 +1,55 @@
+classDiagram
+    direction LR
+    class Usuario {
+        +int Id
+        +string Nome
+        +string Email
+        +string SenhaHash
+        +string Telefone
+        +string? Endereco
+        +string Perfil
+        +DateTime CriadoEm
+    }
+    class Cupcake {
+        +int Id
+        +string Nome
+        +string Descricao
+        +decimal Preco
+        +string Imagem
+        +bool Ativo
+        +DateTime CriadoEm
+    }
+    class Pedido {
+        +int Id
+        +int UsuarioId
+        +StatusPedido Status
+        +decimal TaxaEntrega
+        +string EnderecoEntrega
+        +DateTime CriadoEm
+        +DateTime AtualizadoEm
+        +decimal Subtotal «calculado»
+        +decimal Total «calculado»
+        +int QuantidadeItens «calculado»
+    }
+    class ItemPedido {
+        +int Id
+        +int PedidoId
+        +int CupcakeId
+        +int Quantidade
+        +decimal PrecoUnitario
+        +decimal Subtotal «calculado»
+    }
+    class StatusPedido {
+        <<enumeration>>
+        Recebido
+        EmPreparo
+        SaiuParaEntrega
+        Entregue
+        Cancelado
+        +PodeMudarPara(novo) bool
+        +Rotulo() string
+    }
+    Usuario "1" --> "0..*" Pedido : faz
+    Pedido "1" *-- "1..*" ItemPedido : contém
+    ItemPedido "0..*" --> "1" Cupcake : refere-se a
+    Pedido ..> StatusPedido : usa

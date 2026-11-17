@@ -1,0 +1,40 @@
+name: API - build e testes
+
+on:
+  push:
+    branches: [main]
+    paths: ["CupcakeStore.Api/**", "CupcakeStore.Tests/**", ".github/workflows/api.yml"]
+  pull_request:
+    paths: ["CupcakeStore.Api/**", "CupcakeStore.Tests/**"]
+  workflow_dispatch:
+
+jobs:
+  testes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "9.0.x"
+
+      - name: Restaurar pacotes
+        run: dotnet restore CupcakeStore.Tests/CupcakeStore.Tests.csproj
+
+      - name: Compilar
+        run: dotnet build CupcakeStore.Tests/CupcakeStore.Tests.csproj --no-restore -c Release
+
+      - name: Rodar testes (xUnit)
+        run: >
+          dotnet test CupcakeStore.Tests/CupcakeStore.Tests.csproj --no-build -c Release
+          --logger "trx;LogFileName=resultado.trx"
+          --logger "console;verbosity=normal"
+          --collect:"XPlat Code Coverage"
+          --results-directory ./resultados-testes
+
+      - name: Publicar resultados dos testes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: resultados-testes
+          path: resultados-testes

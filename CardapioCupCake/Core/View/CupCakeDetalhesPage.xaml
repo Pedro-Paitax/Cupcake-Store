@@ -107,6 +107,7 @@
                    TextColor="#FF3F6F"  />
             <Button x:Name="AddToCartButton"
                     Text="ADICIONAR AO CARRINHO" 
+                    Command="{Binding AddToCartCommand}"
                     BackgroundColor="#E91E63"
                     TextColor="White"
                     FontAttributes="Bold"

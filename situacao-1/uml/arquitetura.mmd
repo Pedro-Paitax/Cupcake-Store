@@ -1,0 +1,25 @@
+flowchart LR
+    subgraph Clientes
+        APP["📱 App Android<br/>.NET MAUI · MVVM"]
+        WEB["🛍️ Loja web<br/>HTML + CSS + JS"]
+        ADM["🔐 Painel admin<br/>navegador"]
+    end
+    subgraph Render["☁️ Render (Docker)"]
+        direction TB
+        subgraph API["CupcakeStore.Api · ASP.NET Core 9 · MVC"]
+            CAPI["Controllers REST<br/>/api/*  (JWT)"]
+            CMVC["Controllers + Views Razor<br/>/Painel /Cupcakes /Pedidos (cookie)"]
+            SVC["Services<br/>regras de negócio"]
+            EF["AppDbContext<br/>Entity Framework Core"]
+            CAPI --> SVC
+            CMVC --> SVC
+            SVC --> EF
+        end
+    end
+    DB[("🐘 PostgreSQL<br/>Neon")]
+    APP -- "HTTPS + JSON" --> CAPI
+    WEB -- "fetch() + JSON" --> CAPI
+    ADM -- "HTML" --> CMVC
+    EF -- "Npgsql" --> DB
+    GH["GitHub<br/>repositório"] -. "push = deploy automático" .-> Render
+    GH -. "Actions: testes + APK" .-> APP

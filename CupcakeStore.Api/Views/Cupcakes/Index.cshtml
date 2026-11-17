@@ -1,0 +1,36 @@
+@model List<Cupcake>
+@{
+    ViewData["Title"] = "Cardápio";
+}
+<header class="topo topo-acoes">
+    <div>
+        <h1>Cardápio</h1>
+        <p class="sub">@Model.Count(c => c.Ativo) ativos · @Model.Count(c => !c.Ativo) fora do cardápio</p>
+    </div>
+    <a class="botao" asp-action="Novo">+ Novo cupcake</a>
+</header>
+
+<input type="search" class="busca" placeholder="Buscar cupcake..." data-filtro=".produto" aria-label="Buscar cupcake" />
+
+<section class="grade-produtos">
+    @foreach (var c in Model)
+    {
+        <article class="produto @(c.Ativo ? "" : "inativo")" data-texto="@c.Nome.ToLower()">
+            <img src="@Formatacao.UrlImagem(c.Imagem)" alt="@c.Nome" loading="lazy" />
+            <div class="produto-info">
+                <h3>@c.Nome</h3>
+                <p>@c.Descricao</p>
+                <strong>@c.Preco.Brl()</strong>
+            </div>
+            <div class="produto-acoes">
+                <a class="botao secundario" asp-action="Editar" asp-route-id="@c.Id">Editar</a>
+                <form asp-action="AlternarAtivo" asp-route-id="@c.Id" method="post">
+                    <button type="submit" class="botao @(c.Ativo ? "perigo-leve" : "")"
+                            data-confirmar="@(c.Ativo ? $"Tirar \"{c.Nome}\" do cardápio?" : "")">
+                        @(c.Ativo ? "Desativar" : "Reativar")
+                    </button>
+                </form>
+            </div>
+        </article>
+    }
+</section>

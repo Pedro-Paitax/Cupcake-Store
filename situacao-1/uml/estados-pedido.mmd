@@ -1,0 +1,14 @@
+stateDiagram-v2
+    [*] --> Recebido : cliente finaliza o pedido
+    Recebido --> EmPreparo : admin inicia o preparo
+    EmPreparo --> SaiuParaEntrega : admin despacha
+    SaiuParaEntrega --> Entregue : admin confirma entrega
+    Recebido --> Cancelado : cliente ou admin cancela
+    EmPreparo --> Cancelado : admin cancela
+    SaiuParaEntrega --> Cancelado : admin cancela
+    Entregue --> [*]
+    Cancelado --> [*]
+    note right of Recebido
+        Único estado em que o próprio
+        cliente pode cancelar.
+    end note

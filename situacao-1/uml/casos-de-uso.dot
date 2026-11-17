@@ -1,0 +1,49 @@
+digraph CasosDeUso {
+  rankdir=LR;
+  newrank=true;
+  graph [fontname="Helvetica", fontsize=12, nodesep=0.22, ranksep=1.0, pad=0.3, bgcolor="white"];
+  node  [fontname="Helvetica", fontsize=11];
+  edge  [arrowhead=none, color="#7a6468"];
+
+  Visitante [shape=none, label="👀\nVisitante", fontsize=13];
+  Cliente   [shape=none, label="🧍\nCliente", fontsize=13];
+  Admin     [shape=none, label="🧑‍🍳\nAdministrador", fontsize=13];
+  { rank=same; Visitante; Cliente; Admin; }
+  Visitante -> Cliente -> Admin [style=invis];
+
+  subgraph cluster_sistema {
+    label="Sistema Cupcake Store"; fontsize=15; fontname="Helvetica-Bold";
+    style="rounded"; color="#e91e63"; penwidth=2;
+    node [shape=ellipse, style=filled, fillcolor="#fff1f5", color="#e91e63", width=2.6];
+
+    uc1  [label="UC01 Criar conta"];
+    uc3  [label="UC03 Ver cardápio"];
+    uc4  [label="UC04 Ver detalhes do cupcake"];
+    uc5  [label="UC05 Montar carrinho"];
+    uc6  [label="UC06 Finalizar pedido"];
+    uc7  [label="UC07 Acompanhar pedidos"];
+    uc8  [label="UC08 Cancelar pedido"];
+    uc9  [label="UC09 Editar perfil"];
+    uc2  [label="UC02 Entrar (login)"];
+    uc10 [label="UC10 Gerenciar cardápio"];
+    uc11 [label="UC11 Atualizar status do pedido"];
+    uc12 [label="UC12 Ver painel de indicadores"];
+    { rank=same; uc1; uc3; uc4; uc5; uc6; uc7; uc8; uc9; uc2; uc10; uc11; uc12; }
+    uc1 -> uc3 -> uc4 -> uc5 -> uc6 -> uc7 -> uc8 -> uc9 -> uc2 -> uc10 -> uc11 -> uc12 [style=invis];
+
+    uc13 [label="Validar dados", fillcolor="#fff8e1", color="#c9a227", width=1.6];
+  }
+
+  Visitante -> uc1; Visitante -> uc3; Visitante -> uc4;
+  Cliente -> uc5; Cliente -> uc6; Cliente -> uc7; Cliente -> uc8; Cliente -> uc9; Cliente -> uc2;
+  Admin -> uc2; Admin -> uc10; Admin -> uc11; Admin -> uc12;
+
+  // Generalização: o Cliente pode tudo que o Visitante pode
+  Cliente -> Visitante [arrowhead=empty, constraint=false, xlabel="herda", fontsize=9];
+
+  uc1 -> uc13 [style=dashed, arrowhead=vee, label="«include»", fontsize=9];
+  uc6 -> uc13 [style=dashed, arrowhead=vee, label="«include»", fontsize=9];
+  uc9 -> uc13 [style=dashed, arrowhead=vee, label="«include»", fontsize=9];
+  uc6 -> uc2  [style=dashed, arrowhead=vee, xlabel="«include»", fontsize=9, constraint=false];
+  uc8 -> uc7  [style=dashed, arrowhead=vee, xlabel="«extend»", fontsize=9, constraint=false];
+}

@@ -1,0 +1,42 @@
+sequenceDiagram
+    autonumber
+    actor C as Cliente
+    participant V as CarrinhoPage<br/>(app MAUI)
+    participant VM as CarrinhoViewModel
+    participant H as HubService
+    participant API as PedidosApiController
+    participant S as PedidoService
+    participant DB as PostgreSQL
+
+    C->>V: Toca em "FINALIZAR PEDIDO"
+    V->>VM: FinalizeOrderCommand
+    alt carrinho vazio ou sem endereço
+        VM-->>C: Alerta pedindo o dado que falta
+    else dados ok
+        VM->>H: CriarPedidoAsync(itens, endereço)
+        H->>API: POST /api/pedidos (Bearer JWT)
+        API->>API: valida token JWT
+        alt token inválido ou expirado
+            API-->>H: 401 Unauthorized
+            H-->>VM: "Sua sessão expirou"
+            VM-->>C: Alerta + volta ao login
+        else token válido
+            API->>S: CriarAsync(usuarioId, dto)
+            S->>DB: SELECT cupcakes do carrinho
+            DB-->>S: cupcakes com preço atual
+            alt cupcake inexistente/inativo ou quantidade inválida
+                S-->>API: Falha(Validacao, mensagem)
+                API-->>H: 400 ProblemDetails
+                H-->>VM: mensagem em português
+                VM-->>C: Alerta "Não foi possível finalizar"
+            else tudo certo
+                S->>DB: INSERT pedido + itens (preço congelado)
+                DB-->>S: id do pedido
+                S-->>API: Ok(pedido)
+                API-->>H: 201 Created + PedidoDto
+                H-->>VM: PedidoModel
+                VM->>VM: CarrinhoService.Limpar()
+                VM-->>C: "Pedido #N recebido!" → tela Meus pedidos
+            end
+        end
+    end

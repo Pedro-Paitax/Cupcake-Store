@@ -1,0 +1,4 @@
+Estes arquivos devem ficar em .github/workflows/ (a pasta .github nao pode ser criada remotamente).
+No Explorador de Arquivos: crie a pasta .github\workflows na raiz do projeto e mova os dois .yml para la.
+Ou no terminal (PowerShell), na pasta do projeto:
+  mkdir .github\workflows; move workflows-github\*.yml .github\workflows\; rmdir workflows-github

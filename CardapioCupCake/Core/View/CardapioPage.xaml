@@ -25,7 +25,7 @@
                 <Label Text="Olá," 
                    FontSize="16" 
                    TextColor="#555" />
-                <Label Text="Fulano de Tal" 
+                <Label Text="{Binding NomeUsuario}" 
                    FontSize="16" 
                    FontAttributes="Bold" 
                    TextColor="#E91E63" />
@@ -36,10 +36,41 @@
                HorizontalOptions="Center"
                TextColor="#888"
                Margin="0,5,0,0"/>
+
+            <Button Text="{Binding CartCount, StringFormat='🛒 Carrinho ({0})'}"
+                    Command="{Binding OpenCartCommand}"
+                    BackgroundColor="#E91E63"
+                    TextColor="White"
+                    FontAttributes="Bold"
+                    CornerRadius="20"
+                    HeightRequest="40"
+                    Padding="20,0"
+                    HorizontalOptions="Center"
+                    Margin="0,12,0,0"/>
+
+            <ActivityIndicator IsRunning="{Binding IsBusy}"
+                               IsVisible="{Binding IsBusy}"
+                               Color="#E91E63"
+                               Margin="0,10,0,0"/>
+
+            <Label Text="{Binding MensagemErro}"
+                   TextColor="#C62828"
+                   FontSize="13"
+                   HorizontalTextAlignment="Center"
+                   Margin="0,8,0,0">
+                <Label.Triggers>
+                    <DataTrigger TargetType="Label" Binding="{Binding MensagemErro}" Value="">
+                        <Setter Property="IsVisible" Value="False" />
+                    </DataTrigger>
+                </Label.Triggers>
+            </Label>
         </VerticalStackLayout>
 
-        <CollectionView Grid.Row="1"
-                         x:Name="CupCakeCollection"
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding CarregarCommand}"
+                     RefreshColor="#E91E63">
+        <CollectionView x:Name="CupCakeCollection"
                     BackgroundColor="Transparent"
                     ItemsSource="{Binding Cupcakes}"
                     SelectedItem="{Binding SelectedItem}"
@@ -92,6 +123,7 @@
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
+        </RefreshView>
 
         <controles:MenuComp Grid.Row="2"
                         VerticalOptions="End"

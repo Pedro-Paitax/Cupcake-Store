@@ -1,123 +1,52 @@
-﻿using CardapioCupCake.Core.Models;
+using CardapioCupCake.Core.Models;
 using CardapioCupCake.Core.Service;
+using CardapioCupCake.Core.View;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace CardapioCupCake.Core.ViewModel
 {
     public partial class CupcakeDetailViewModel : BaseViewModel
     {
-        ListCupCakeRepository cupcakeRepository;    
+        public CupcakeModel Cupcake { get; }
+
         [ObservableProperty]
-        private int cupcakeId;
-
-        private CupcakeModel cupcake;
-        public CupcakeModel Cupcake
-        {
-            get => cupcake;
-            set => SetProperty(ref cupcake, value);
-        }
-        private int quantityText = 1;
-        public int QuantityText
-        {
-            get => quantityText;
-            set
-            {
-                if (SetProperty(ref quantity, value))
-                {
-                    UpdateTotalValue();
-                }
-            }
-        }
-
-
+        [NotifyPropertyChangedFor(nameof(TotalValue))]
         private int quantity = 1;
-        public int Quantity
-        {
-            get => quantity;
-            set
-            {
-                if (SetProperty(ref quantity, value))
-                {
-                    UpdateTotalValue();
-                }
-            }
-        }
 
-        private int menosQuantity = 1;
-        public int MenosQuantity
-        {
-            get => menosQuantity;
-            set
-            {
-                if (SetProperty(ref menosQuantity, value))
-                {
-                    DecreaseQuantity();
-                }
-            }
-        }
+        public double TotalValue => Quantity * Cupcake.Price;
 
-        [ObservableProperty]
-        private double totalValue;
         public CupcakeDetailViewModel(CupcakeModel cupcake)
         {
             Cupcake = cupcake;
-            cupcakeRepository = new ListCupCakeRepository();
-            UpdateTotalValue();
-        }
-        partial void OnCupcakeIdChanged(int value)
-        {
-            LoadCupcakeDetails(value);
-        }
-
-        private void UpdateTotalValue()
-        {
-            if (Cupcake != null)
-            {
-                TotalValue = (double)Quantity * Cupcake.Price;
-            }
-        }
-
-        private void LoadCupcakeDetails(int id)
-        {
-            UpdateTotalValue();
         }
 
         [RelayCommand]
-        private void IncreaseQuantity() 
+        private void IncreaseQuantity()
         {
-            Quantity++;
-            OnPropertyChanged(nameof(Quantity));
-            OnPropertyChanged(nameof(TotalValue));
+            if (Quantity < CarrinhoService.QuantidadeMaxima) Quantity++;
         }
 
         [RelayCommand]
-        private void DecreaseQuantity()         
+        private void DecreaseQuantity()
         {
-            if (Quantity > 1)
-            {
-                Quantity--;
-                OnPropertyChanged(nameof(Quantity));
-                OnPropertyChanged(nameof(TotalValue));
-            }
+            if (Quantity > 1) Quantity--;
         }
 
         [RelayCommand]
         private async Task AddToCart()
         {
-            if (Cupcake != null && Quantity > 0)
-            {
-                cupcakeRepository.AddCupcakesCarrinho(Cupcake);
-                await Shell.Current.DisplayAlert("Adicionado!",
-                    $"{Quantity} x {Cupcake.Name} adicionado(s) ao carrinho.",
-                    "OK");
+            CarrinhoService.Adicionar(Cupcake, Quantity);
 
-            }
+            var irParaCarrinho = await Shell.Current.DisplayAlert("Adicionado! 🧁",
+                $"{Quantity} x {Cupcake.Name} no carrinho.",
+                "Ver carrinho", "Continuar comprando");
+
+            var navegacao = Shell.Current.CurrentPage.Navigation;
+            if (irParaCarrinho)
+                await navegacao.PushAsync(new CarrinhoPage(new CarrinhoViewModel()));
+            else
+                await navegacao.PopAsync();
         }
     }
 }

@@ -1,0 +1,40 @@
+erDiagram
+    usuario ||--o{ pedido : "faz"
+    pedido ||--|{ item_pedido : "contém"
+    cupcake ||--o{ item_pedido : "aparece em"
+
+    usuario {
+        integer id PK
+        varchar(100) nome
+        varchar(150) email UK
+        varchar(255) senha_hash
+        varchar(11) telefone
+        varchar(200) endereco "nulo"
+        varchar(10) perfil "cliente | admin"
+        timestamptz criado_em
+    }
+    cupcake {
+        integer id PK
+        varchar(80) nome UK
+        varchar(500) descricao
+        numeric(10_2) preco "maior que 0"
+        varchar(300) imagem
+        boolean ativo
+        timestamptz criado_em
+    }
+    pedido {
+        integer id PK
+        integer usuario_id FK
+        varchar(20) status
+        numeric(10_2) taxa_entrega
+        varchar(200) endereco_entrega
+        timestamptz criado_em
+        timestamptz atualizado_em
+    }
+    item_pedido {
+        integer id PK
+        integer pedido_id FK "UK com cupcake_id"
+        integer cupcake_id FK
+        integer quantidade "1 a 50"
+        numeric(10_2) preco_unitario
+    }

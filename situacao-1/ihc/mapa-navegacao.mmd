@@ -1,0 +1,24 @@
+flowchart TD
+    subgraph APP["📱 App (MAUI)"]
+        L[Login] -->|Não tem cadastro?| CA[Cadastro]
+        CA -->|sucesso| L
+        L -->|login ok| CP[Cardápio]
+        CP -->|toca no cupcake| DT[Detalhes]
+        DT -->|Adicionar → Ver carrinho| CR[Carrinho]
+        DT -->|Adicionar → Continuar| CP
+        CP -->|🛒 Carrinho| CR
+        CR -->|Finalizar pedido| MP[Meus pedidos]
+        PF[Perfil] -->|Meus pedidos| MP
+        PF -->|Sair| L
+        M{{Menu inferior<br/>Início · Pedidos · Carrinho · Perfil}} -.-> CP & MP & CR & PF
+    end
+    subgraph WEB["🌐 Web"]
+        H[Início /] --> LJ[Loja /loja]
+        H --> LG[Login admin]
+        LJ -.->|diálogo| CT[Entrar / Criar conta]
+        LJ -.->|gaveta| CW[Carrinho]
+        LJ -.->|diálogo| AC[Meus pedidos / Meus dados]
+        LG --> PN[Painel: visão geral]
+        PN --> PD[Pedidos] --> PDD[Detalhes do pedido + status]
+        PN --> CD[Cardápio] --> FM[Novo / Editar cupcake]
+    end

@@ -1,0 +1,83 @@
+classDiagram
+    direction TB
+    namespace Controllers_API {
+        class AuthApiController {
+            +Login(LoginDto) IActionResult
+        }
+        class UsuariosApiController {
+            +Cadastrar(CadastroUsuarioDto) IActionResult
+            +Me() IActionResult
+            +Atualizar(AtualizarUsuarioDto) IActionResult
+        }
+        class CupcakesApiController {
+            +Listar() IActionResult
+            +Obter(id) IActionResult
+        }
+        class PedidosApiController {
+            +Criar(CriarPedidoDto) IActionResult
+            +Meus() IActionResult
+            +Obter(id) IActionResult
+            +Cancelar(id) IActionResult
+        }
+    }
+    namespace Controllers_Painel {
+        class PainelController {
+            +Index() ViewResult
+        }
+        class CupcakesController {
+            +Index() ViewResult
+            +Novo() ViewResult
+            +Editar(id) ViewResult
+            +Salvar(form) IActionResult
+            +AlternarAtivo(id) IActionResult
+        }
+        class PedidosController {
+            +Index(status) ViewResult
+            +Detalhes(id) ViewResult
+            +AtualizarStatus(id, status) IActionResult
+        }
+        class ContaController {
+            +Login(model) IActionResult
+            +Sair() IActionResult
+        }
+    }
+    namespace Services {
+        class UsuarioService {
+            +CadastrarAsync(dto) Resultado~Usuario~
+            +AutenticarAsync(email, senha) Resultado~Usuario~
+            +AtualizarAsync(id, dto) Resultado~Usuario~
+        }
+        class CupcakeService {
+            +ListarAsync(somenteAtivos) List~Cupcake~
+            +SalvarAsync(form) Resultado~Cupcake~
+            +AlternarAtivoAsync(id) Resultado~Cupcake~
+        }
+        class PedidoService {
+            +CriarAsync(usuarioId, dto) Resultado~Pedido~
+            +ListarDoUsuarioAsync(usuarioId) List~Pedido~
+            +AtualizarStatusAsync(id, status) Resultado~Pedido~
+            +CancelarPeloClienteAsync(id, usuarioId) Resultado~Pedido~
+            +MontarDashboardAsync() DashboardViewModel
+        }
+        class TokenService {
+            +Gerar(usuario) string
+        }
+    }
+    class AppDbContext {
+        +DbSet~Usuario~ Usuarios
+        +DbSet~Cupcake~ Cupcakes
+        +DbSet~Pedido~ Pedidos
+        +DbSet~ItemPedido~ ItensPedido
+    }
+    AuthApiController --> UsuarioService
+    AuthApiController --> TokenService
+    UsuariosApiController --> UsuarioService
+    ContaController --> UsuarioService
+    CupcakesApiController --> CupcakeService
+    CupcakesController --> CupcakeService
+    PedidosApiController --> PedidoService
+    PedidosController --> PedidoService
+    PainelController --> PedidoService
+    UsuarioService --> AppDbContext
+    CupcakeService --> AppDbContext
+    PedidoService --> AppDbContext

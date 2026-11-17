@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:vm="clr-namespace:CardapioCupCake.Core.ViewModel"
+             xmlns:controles="clr-namespace:CardapioCupCake.Core.UI.Componentes"
+             x:Class="CardapioCupCake.Core.View.MeusPedidosPage"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="WhiteSmoke">
+    <Grid RowDefinitions="Auto, *, Auto">
+        <VerticalStackLayout Grid.Row="0" Padding="20,30,20,10" Spacing="4">
+            <Label Text="Meus pedidos" FontSize="24" FontAttributes="Bold" TextColor="#D81B60"/>
+            <Label Text="Puxe para baixo para atualizar o status." FontSize="12" TextColor="Gray"/>
+            <Label Text="{Binding Mensagem}" TextColor="Gray" Margin="0,10,0,0"/>
+        </VerticalStackLayout>
+
+        <RefreshView Grid.Row="1"
+                     IsRefreshing="{Binding IsRefreshing}"
+                     Command="{Binding CarregarCommand}"
+                     RefreshColor="#E91E63">
+            <CollectionView ItemsSource="{Binding Pedidos}" Margin="15,0">
+                <CollectionView.ItemsLayout>
+                    <LinearItemsLayout Orientation="Vertical" ItemSpacing="12"/>
+                </CollectionView.ItemsLayout>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border BackgroundColor="White" StrokeThickness="0" Padding="15" StrokeShape="RoundRectangle 14">
+                            <VerticalStackLayout Spacing="6">
+                                <Grid ColumnDefinitions="*, Auto">
+                                    <Label Text="{Binding Titulo}" FontAttributes="Bold" FontSize="16" TextColor="#333"/>
+                                    <Label Grid.Column="1" Text="{Binding StatusDescricao}" FontAttributes="Bold" TextColor="{Binding CorStatus}"/>
+                                </Grid>
+                                <Label Text="{Binding DataFormatada}" FontSize="12" TextColor="Gray"/>
+                                <Label Text="{Binding ResumoItens}" TextColor="#555"/>
+                                <Label Text="{Binding EnderecoEntrega, StringFormat='📍 {0}'}" FontSize="12" TextColor="Gray"/>
+                                <Grid ColumnDefinitions="*, Auto" Margin="0,4,0,0">
+                                    <Label Text="{Binding DisplayTotal}" FontAttributes="Bold" FontSize="16" TextColor="#D81B60" VerticalOptions="Center"/>
+                                    <Button Grid.Column="1"
+                                            Text="Cancelar"
+                                            IsVisible="{Binding PodeCancelar}"
+                                            Command="{Binding Source={RelativeSource AncestorType={x:Type vm:MeusPedidosViewModel}}, Path=CancelarCommand}"
+                                            CommandParameter="{Binding .}"
+                                            BackgroundColor="Transparent"
+                                            BorderColor="#E57373"
+                                            BorderWidth="1"
+                                            TextColor="#C62828"
+                                            CornerRadius="16"
+                                            HeightRequest="34"
+                                            Padding="14,0"/>
+                                </Grid>
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+        <controles:MenuComp Grid.Row="2" VerticalOptions="End"/>
+    </Grid>
+</ContentPage>

@@ -1,84 +1,74 @@
-﻿using CardapioCupCake.Core.Models;
+using CardapioCupCake.Core.Models;
+using CardapioCupCake.Core.Service;
 using CardapioCupCake.Core.View;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
 
 namespace CardapioCupCake.Core.ViewModel
 {
     public partial class CardapioViewModel : BaseViewModel
     {
-        private int _cartCount;
-        public int CartCount
-        {
-            get => _cartCount;
-            set => SetProperty(ref _cartCount, value);
-        }
+        private readonly HubService _hubService = new();
 
-        private CupcakeModel _selectedItem;
-        public CupcakeModel SelectedItem
-        {
-            get => _selectedItem;
-            set
-            {
-                _selectedItem = value;
-                OnPropertyChanged();
-            }
-        }
-        public ObservableCollection<CupcakeModel> Cupcakes { get; set; }
+        public ObservableCollection<CupcakeModel> Cupcakes { get; } = new();
 
-        public ICommand OpenMenuCommand { get; }
-        public ICommand OpenCartCommand { get; }
-        public ICommand AddToCartCommand { get; }
+        [ObservableProperty]
+        private CupcakeModel? selectedItem;
+
+        [ObservableProperty]
+        private bool isRefreshing;
+
+        [ObservableProperty]
+        private string mensagemErro = string.Empty;
+
+        public string NomeUsuario => Sessao.Usuario?.Nome?.Split(' ').FirstOrDefault() ?? "visitante";
+
+        public int CartCount => CarrinhoService.QuantidadeTotal;
 
         public CardapioViewModel()
         {
-            OpenMenuCommand = new Command(OpenMenu);
-            OpenCartCommand = new Command(OpenCart);
-            AddToCartCommand = new Command<CupcakeModel>(AddToCart);
-
-            Cupcakes = new ObservableCollection<CupcakeModel>
-            {
-              new CupcakeModel {Id=1, Name = "Cupcake de Chocolate", Price = 8, Image = "chocolate", Descricao = "Um bolo fofo de chocolate amargo, coberto com ganache de chocolate cremoso e raspas de cacau." },
-              new CupcakeModel {Id=2, Name = "Cupcake de Morango", Price = 9, Image = "morango", Descricao = "Massa de baunilha com pedaços de morango, recheado com geleia de morango caseira e cobertura de chantilly de morango." },
-              new CupcakeModel {Id=3, Name = "Cupcake de Baunilha", Price = 7, Image = "baunilha", Descricao = "A receita original, com massa aerada de baunilha e uma suave cobertura de buttercream de baunilha." },
-              new CupcakeModel {Id=4, Name = "Cupcake Red Velvet", Price = 10, Image = "velvet", Descricao = "O famoso bolo aveludado vermelho, com um toque suave de cacau, e a tradicional cobertura de cream cheese frosting." },
-              new CupcakeModel {Id=5, Name = "Cupcake de Limão Siciliano", Price = 9, Image = "limao", Descricao = "Bolo com raspas e sumo de limão siciliano, com recheio ácido e doce, e cobertura de merengue suíço tostado." },
-              new CupcakeModel {Id=6, Name = "Cupcake de Doce de Leite", Price = 11, Image = "doce", Descricao = "Massa úmida de coco, recheada com doce de leite argentino e finalizada com flocos de coco queimado." },
-              new CupcakeModel {Id=7, Name = "Cupcake de Café e Caramelo Salgado", Price = 10, Image = "caramelo", Descricao = "Bolo de café intenso, coberto com um buttercream de caramelo salgado e um grão de café coberto com chocolate." },
-              new CupcakeModel {Id=8, Name = "Cupcake de Cenoura", Price = 9, Image = "cenoura", Descricao = "Massa de cenoura com canela e nozes picadas, com cobertura densa e cremosa de cream cheese e um toque de especiarias." }
-            };
+            CarrinhoService.Alterado += (_, _) => OnPropertyChanged(nameof(CartCount));
+            _ = CarregarAsync();
         }
 
         [RelayCommand]
-        public async Task EditCupCake(CupcakeModel cupcake)
+        private async Task CarregarAsync()
         {
-            if (cupcake != null)
+            IsBusy = true;
+            MensagemErro = string.Empty;
+            try
             {
-                await Shell.Current.CurrentPage.Navigation.PushAsync(new CupCakeDetalhesPage(new CupcakeDetailViewModel(cupcake)), false);
+                var (lista, erro) = await _hubService.GetCupcakesAsync();
+                if (erro != null)
+                {
+                    MensagemErro = erro + " Puxe a tela para baixo para tentar de novo.";
+                    return;
+                }
 
+                Cupcakes.Clear();
+                foreach (var c in lista) Cupcakes.Add(c);
+                if (Cupcakes.Count == 0) MensagemErro = "O cardápio está vazio no momento.";
+            }
+            finally
+            {
+                IsBusy = false;
+                IsRefreshing = false;
             }
         }
 
-        private void OpenMenu()
+        [RelayCommand]
+        public async Task EditCupCake(CupcakeModel? cupcake)
         {
-            Application.Current.MainPage.DisplayAlert("Menu", "Abrir menu lateral", "OK");
+            if (cupcake == null) return;
+            await Shell.Current.CurrentPage.Navigation.PushAsync(new CupCakeDetalhesPage(new CupcakeDetailViewModel(cupcake)), false);
+            SelectedItem = null; // permite tocar de novo no mesmo item
         }
 
-        private void OpenCart()
+        [RelayCommand]
+        private async Task OpenCart()
         {
-            Application.Current.MainPage.DisplayAlert("Carrinho", $"Você tem {CartCount} itens no carrinho", "OK");
-        }
-
-        private void AddToCart(CupcakeModel cupcake)
-        {
-            CartCount++;
-            Application.Current.MainPage.DisplayAlert("Carrinho", $"{cupcake.Name} adicionado ao carrinho!", "OK");
+            await Shell.Current.CurrentPage.Navigation.PushAsync(new CarrinhoPage(new CarrinhoViewModel()));
         }
     }
 }

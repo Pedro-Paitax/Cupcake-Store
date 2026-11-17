@@ -1,0 +1,18 @@
+@model PedidosListaViewModel
+@{
+    ViewData["Title"] = "Pedidos";
+}
+<header class="topo">
+    <h1>Pedidos</h1>
+    <p class="sub">@Model.Pedidos.Count pedido(s) @(Model.Filtro is null ? "no total" : $"com status \"{Model.Filtro.Value.Rotulo()}\"")</p>
+</header>
+<nav class="filtros" aria-label="Filtrar por status">
+    <a class="@(Model.Filtro is null ? "ativo" : "")" asp-action="Index">Todos</a>
+    @foreach (var status in Enum.GetValues<StatusPedido>())
+    {
+        <a class="@(Model.Filtro == status ? "ativo" : "")" asp-action="Index" asp-route-status="@status">@status.Rotulo()</a>
+    }
+</nav>
+<section class="cartao">
+    <partial name="_TabelaPedidos" model="Model.Pedidos" />
+</section>

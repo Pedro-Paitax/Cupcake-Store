@@ -1,22 +1,14 @@
-﻿using CardapioCupCake.Core.Models;
+using CardapioCupCake.Core.Models;
 using CardapioCupCake.Core.Service;
-using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace CardapioCupCake.Core.ViewModel
 {
     public partial class CadastroViewModel : BaseViewModel
     {
-        private readonly HubService hubService;
+        private readonly HubService hubService = new();
         private CadastroModel usuario = new();
 
         public string Nome
@@ -39,7 +31,7 @@ namespace CardapioCupCake.Core.ViewModel
 
         public string Endereco
         {
-            get =>  usuario.Endereco;
+            get => usuario.Endereco;
             set { usuario.Endereco = value; OnPropertyChanged(); }
         }
 
@@ -49,7 +41,14 @@ namespace CardapioCupCake.Core.ViewModel
             set { usuario.Telefone = value; OnPropertyChanged(); }
         }
 
-        private string mensagem;
+        private string confirmarSenha = string.Empty;
+        public string ConfirmarSenha
+        {
+            get => confirmarSenha;
+            set { confirmarSenha = value; OnPropertyChanged(); }
+        }
+
+        private string mensagem = string.Empty;
         public string Mensagem
         {
             get => mensagem;
@@ -62,74 +61,70 @@ namespace CardapioCupCake.Core.ViewModel
         }
 
         public bool IsMensagemVisible => !string.IsNullOrWhiteSpace(Mensagem);
-        [ObservableProperty]
-        private bool _isEmailValid = true;
-
-        private string confirmarSenha; 
-        public string ConfirmarSenha
-        {
-            get => confirmarSenha;
-            set { confirmarSenha = value; OnPropertyChanged(); }
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
 
         public ICommand CadastrarCommand { get; }
 
         public CadastroViewModel()
         {
-            hubService = hubService;
-            CadastrarCommand = new RelayCommand(Cadastrar);
+            CadastrarCommand = new AsyncRelayCommand(CadastrarAsync);
         }
-        private void Cadastrar()
-        {
-            Mensagem = string.Empty;
 
+        /// <summary>Validação local (resposta imediata). A API valida tudo de novo.</summary>
+        public string? Validar()
+        {
             if (string.IsNullOrWhiteSpace(Nome) ||
                 string.IsNullOrWhiteSpace(Email) ||
                 string.IsNullOrWhiteSpace(Senha) ||
                 string.IsNullOrWhiteSpace(ConfirmarSenha) ||
                 string.IsNullOrWhiteSpace(Telefone))
-            {
-                Mensagem = "Preencha todos os campos obrigatórios!";
-                return;
-            }
+                return "Preencha todos os campos obrigatórios!";
 
-            if (!IsEmailValid)
-            {
-                Mensagem = "O formato do E-mail é inválido. Por favor, verifique.";
-                return;
-            }
+            if (Nome.Trim().Length < 3)
+                return "Informe o nome completo.";
 
-            string telefoneLimpo = Regex.Replace(Telefone ?? string.Empty, @"[^\d]", "");
+            if (!Regex.IsMatch(Email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                return "O formato do E-mail é inválido. Por favor, verifique.";
 
+            var telefoneLimpo = Regex.Replace(Telefone, @"[^\d]", "");
             if (telefoneLimpo.Length < 10 || telefoneLimpo.Length > 11)
-            {
-                Mensagem = "Telefone incorreto. Deve conter 10 ou 11 dígitos (com DDD).";
-                return;
-            }
+                return "Telefone incorreto. Deve conter 10 ou 11 dígitos (com DDD).";
 
             if (Senha.Length < 8)
-            {
-                Mensagem = "A senha deve ter no mínimo 8 caracteres.";
-                return;
-            }
+                return "A senha deve ter no mínimo 8 caracteres.";
 
             if (Senha != ConfirmarSenha)
+                return "As senhas digitadas não são iguais. Por favor, verifique.";
+
+            return null;
+        }
+
+        private async Task CadastrarAsync()
+        {
+            if (IsBusy) return;
+            Mensagem = Validar() ?? string.Empty;
+            if (IsMensagemVisible) return;
+
+            IsBusy = true;
+            try
             {
-                Mensagem = "As senhas digitadas não são iguais. Por favor, verifique.";
-                return;
-            }
+                var novoUsuario = new CadastroModel
+                {
+                    Nome = Nome.Trim(),
+                    Email = Email.Trim(),
+                    Senha = Senha,                       // a API grava apenas o hash
+                    Endereco = Endereco?.Trim() ?? string.Empty,
+                    Telefone = Regex.Replace(Telefone, @"[^\d]", "")
+                };
 
-             Task.Delay(2000);
-            bool resultado = true;
+                var (ok, erro) = await hubService.CadastrarAsync(novoUsuario);
+                if (!ok)
+                {
+                    Mensagem = erro ?? "Não foi possível concluir o cadastro.";
+                    return;
+                }
 
-            if (resultado)
-            {
-                Mensagem = "✅ Usuário cadastrado com sucesso!";
+                await Shell.Current.DisplayAlert("Conta criada! 🧁", "Cadastro feito com sucesso. Agora é só entrar com seu e-mail e senha.", "OK");
 
-                 Shell.Current.GoToAsync(".."); // Ex: Navegar para a tela de Login ou Home.
-
-                // Limpeza dos campos após o sucesso
                 usuario = new CadastroModel();
                 ConfirmarSenha = string.Empty;
                 OnPropertyChanged(nameof(Nome));
@@ -137,106 +132,13 @@ namespace CardapioCupCake.Core.ViewModel
                 OnPropertyChanged(nameof(Senha));
                 OnPropertyChanged(nameof(Endereco));
                 OnPropertyChanged(nameof(Telefone));
-                OnPropertyChanged(nameof(ConfirmarSenha));
-                return;
-            }
-            else
-            {
 
-                 Shell.Current.DisplayAlert("Aviso!", "Cadastro falhou. Este e-mail já está em uso.", "OK");
-                return;
-            }
-        }
-
-
-        private async Task CadastrarAsync()
-        {
-            /*IsBusy = true;*/ 
-            try
-            {
-                Mensagem = string.Empty;
-
-                if (string.IsNullOrWhiteSpace(Nome) ||
-                    string.IsNullOrWhiteSpace(Email) ||
-                    string.IsNullOrWhiteSpace(Senha) ||
-                    string.IsNullOrWhiteSpace(ConfirmarSenha) ||
-                    string.IsNullOrWhiteSpace(Telefone))
-                {
-                    Mensagem = "Preencha todos os campos obrigatórios!";
-                    return;
-                }
-
-                string telefoneLimpo = Regex.Replace(Telefone ?? string.Empty, @"[^\d]", "");
-
-                if (telefoneLimpo.Length < 10 || telefoneLimpo.Length > 11)
-                {
-                    Mensagem = "Telefone incorreto. Deve conter 10 ou 11 dígitos (com DDD).";
-                    return;
-                }
-
-                if (Senha.Length < 8)
-                {
-                    Mensagem = "A senha deve ter no mínimo 8 caracteres.";
-                    return;
-                }
-
-                if (Senha != ConfirmarSenha)
-                {
-                    Mensagem = "As senhas digitadas não são iguais. Por favor, verifique.";
-                    return;
-                }
-
-                // --- INTEGRAÇÃO COM A API (POST) ---
-
-                // Crio um objeto com os dados limpos para enviar
-                var novoUsuario = new CadastroModel
-                {
-                    Nome = Nome,
-                    Email = Email,
-                    Senha = Senha, // A Senha deve ser hashada antes de ir para um banco de dados real.
-                    Endereco = Endereco,
-                    Telefone = telefoneLimpo // Envia o telefone limpo
-                };
-
-                //var resultado = await hubService.PostNovoCadastroAsync(novoUsuario);
-
-                await Task.Delay(2000);
-                bool resultado = true; 
-
-                if (resultado)
-                {
-                    Mensagem = "✅ Usuário cadastrado com sucesso!";
-
-                    await Shell.Current.GoToAsync(".."); // Ex: Navegar para a tela de Login ou Home.
-
-                    // Limpeza dos campos após o sucesso
-                    usuario = new CadastroModel();
-                    ConfirmarSenha = string.Empty;
-                    OnPropertyChanged(nameof(Nome));
-                    OnPropertyChanged(nameof(Email));
-                    OnPropertyChanged(nameof(Senha));
-                    OnPropertyChanged(nameof(Endereco));
-                    OnPropertyChanged(nameof(Telefone));
-                    OnPropertyChanged(nameof(ConfirmarSenha));
-                }
-                else
-                {
-
-                    await Shell.Current.DisplayAlert("Aviso!", "Cadastro falhou. Este e-mail já está em uso.", "OK");
-
-                }
-
-            }
-            catch (Exception ex)
-            {
-                await Shell.Current.DisplayAlert("Aviso!", $"Ocorreu um erro: {ex.Message}", "OK");
+                await Shell.Current.CurrentPage.Navigation.PopAsync();
             }
             finally
             {
-                // Isso garante que o indicador de carregamento (IsBusy) seja sempre desativado.
-                //IsBusy = false;
+                IsBusy = false;
             }
         }
     }
-
 }

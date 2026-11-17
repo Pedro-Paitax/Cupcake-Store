@@ -1,0 +1,23 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Entrar";
+}
+<section class="caixa-login">
+    <img src="~/img/logo_cupcake.png" alt="" class="logo-login" />
+    <h1>Painel da loja</h1>
+    <p class="sub">Acesso exclusivo da administração.</p>
+    <form asp-action="Login" method="post" novalidate>
+        <div asp-validation-summary="ModelOnly" class="aviso erro" role="alert"></div>
+        <input type="hidden" asp-for="ReturnUrl" />
+        <label asp-for="Email">E-mail</label>
+        <input asp-for="Email" type="email" autocomplete="username" placeholder="admin@cupcakestore.com" />
+        <span asp-validation-for="Email" class="erro-campo"></span>
+
+        <label asp-for="Senha">Senha</label>
+        <input asp-for="Senha" autocomplete="current-password" />
+        <span asp-validation-for="Senha" class="erro-campo"></span>
+
+        <button type="submit" class="botao largo">Entrar</button>
+    </form>
+    <a class="link-voltar" href="/">← Voltar</a>
+</section>

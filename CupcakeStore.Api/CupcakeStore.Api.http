@@ -1,0 +1,32 @@
+# Requisições de exemplo (abra no Visual Studio / VS Code com a extensão REST Client)
+@base = http://localhost:5080
+
+### Saúde
+GET {{base}}/health
+
+### Cardápio
+GET {{base}}/api/cupcakes
+
+### Cadastro
+POST {{base}}/api/usuarios
+Content-Type: application/json
+
+{ "nome": "Maria Souza", "email": "maria@email.com", "senha": "senha12345", "telefone": "41999998888", "endereco": "Rua das Flores, 100" }
+
+### Login (copie o token da resposta)
+# @name login
+POST {{base}}/api/login
+Content-Type: application/json
+
+{ "email": "maria@email.com", "senha": "senha12345" }
+
+### Criar pedido
+POST {{base}}/api/pedidos
+Authorization: Bearer {{login.response.body.token}}
+Content-Type: application/json
+
+{ "itens": [ { "cupcakeId": 1, "quantidade": 2 }, { "cupcakeId": 4, "quantidade": 1 } ], "enderecoEntrega": "Rua das Flores, 100" }
+
+### Meus pedidos
+GET {{base}}/api/pedidos/meus
+Authorization: Bearer {{login.response.body.token}}

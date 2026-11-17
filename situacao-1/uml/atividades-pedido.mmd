@@ -1,0 +1,25 @@
+flowchart TD
+    A([Início]) --> B[Abrir o app ou a loja web]
+    B --> C{Tem conta?}
+    C -- Não --> D[Criar conta]
+    D --> E{Dados válidos?}
+    E -- Não --> D
+    E -- Sim --> F[Entrar com e-mail e senha]
+    C -- Sim --> F
+    F --> G{Login aceito?}
+    G -- Não --> F
+    G -- Sim --> H[Ver cardápio]
+    H --> I[Abrir detalhes do cupcake]
+    I --> J[Escolher quantidade e adicionar ao carrinho]
+    J --> K{Quer mais algum?}
+    K -- Sim --> H
+    K -- Não --> L[Revisar carrinho: quantidades e endereço]
+    L --> M[Finalizar pedido]
+    M --> N{API aceitou?}
+    N -- Não --> O[Mostrar mensagem de erro] --> L
+    N -- Sim --> P[Pedido gravado como 'Recebido']
+    P --> Q[Cliente acompanha em 'Meus pedidos']
+    P --> R[Admin vê o pedido no painel]
+    R --> S[Admin avança o status até 'Entregue']
+    S --> T([Fim])
+    Q --> T

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cupcake Store · Loja</title>
+  <meta name="description" content="Cupcakes artesanais com entrega. Monte seu pedido online." />
+  <link rel="icon" href="/img/logo_cupcake.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="loja.css" />
+</head>
+<body>
+  <header class="barra-topo">
+    <a class="marca" href="/loja/">
+      <img src="/img/logo_cupcake.png" alt="" />
+      <span>Cupcake <b>Store</b></span>
+    </a>
+    <div class="acoes-topo">
+      <button type="button" class="botao-icone" id="btn-conta" aria-haspopup="dialog">
+        <span aria-hidden="true">👤</span> <span id="rotulo-conta">Entrar</span>
+      </button>
+      <button type="button" class="botao-icone carrinho" id="btn-carrinho" aria-haspopup="dialog">
+        <span aria-hidden="true">🛒</span> Carrinho
+        <span class="contador" id="contador" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div>
+        <p class="sobrelinha">Feitos hoje, entregues hoje</p>
+        <h1>Qual cupcake vai <em>adoçar</em> o seu dia?</h1>
+        <p class="sub">Escolha os sabores, ajuste as quantidades e acompanhe o pedido até a sua porta.</p>
+      </div>
+      <img src="/img/velvet.png" alt="Cupcake red velvet" class="hero-foto" />
+    </section>
+
+    <div class="busca-linha">
+      <input type="search" id="busca" placeholder="Buscar sabor..." aria-label="Buscar sabor" />
+    </div>
+
+    <section id="cardapio" class="grade" aria-live="polite">
+      <p class="carregando">Carregando o cardápio...</p>
+    </section>
+  </main>
+
+  <footer class="rodape">
+    Projeto Integrador · Engenharia de Software · <a href="/">Início</a>
+  </footer>
+
+  <!-- Carrinho -->
+  <dialog id="dlg-carrinho" class="gaveta" aria-labelledby="titulo-carrinho">
+    <div class="dialogo-topo">
+      <h2 id="titulo-carrinho">Seu carrinho</h2>
+      <button type="button" class="fechar" data-fechar aria-label="Fechar">✕</button>
+    </div>
+    <div id="carrinho-conteudo"></div>
+  </dialog>
+
+  <!-- Conta (entrar / criar conta) -->
+  <dialog id="dlg-conta" aria-labelledby="titulo-conta">
+    <div class="dialogo-topo">
+      <h2 id="titulo-conta">Sua conta</h2>
+      <button type="button" class="fechar" data-fechar aria-label="Fechar">✕</button>
+    </div>
+    <div class="abas" role="tablist">
+      <button type="button" role="tab" class="aba ativa" data-aba="entrar" aria-selected="true">Entrar</button>
+      <button type="button" role="tab" class="aba" data-aba="cadastrar" aria-selected="false">Criar conta</button>
+    </div>
+
+    <form id="form-entrar" class="formulario" novalidate>
+      <label for="login-email">E-mail</label>
+      <input id="login-email" name="email" type="email" autocomplete="username" required />
+      <label for="login-senha">Senha</label>
+      <input id="login-senha" name="senha" type="password" autocomplete="current-password" required />
+      <p class="erro-form" role="alert" hidden></p>
+      <button type="submit" class="botao largo">Entrar</button>
+    </form>
+
+    <form id="form-cadastrar" class="formulario" novalidate hidden>
+      <label for="cad-nome">Nome completo</label>
+      <input id="cad-nome" name="nome" autocomplete="name" required minlength="3" maxlength="100" />
+      <label for="cad-email">E-mail</label>
+      <input id="cad-email" name="email" type="email" autocomplete="email" required />
+      <label for="cad-telefone">Telefone (com DDD)</label>
+      <input id="cad-telefone" name="telefone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="(41) 99999-9999" required />
+      <label for="cad-endereco">Endereço de entrega</label>
+      <input id="cad-endereco" name="endereco" autocomplete="street-address" maxlength="200" placeholder="Rua, número, bairro" />
+      <label for="cad-senha">Senha (mínimo 8 caracteres)</label>
+      <input id="cad-senha" name="senha" type="password" autocomplete="new-password" required minlength="8" />
+      <label for="cad-confirmar">Confirmar senha</label>
+      <input id="cad-confirmar" name="confirmar" type="password" autocomplete="new-password" required />
+      <p class="erro-form" role="alert" hidden></p>
+      <button type="submit" class="botao largo">Criar conta</button>
+    </form>
+  </dialog>
+
+  <!-- Área do cliente -->
+  <dialog id="dlg-perfil" aria-labelledby="titulo-perfil">
+    <div class="dialogo-topo">
+      <h2 id="titulo-perfil">Olá!</h2>
+      <button type="button" class="fechar" data-fechar aria-label="Fechar">✕</button>
+    </div>
+    <div class="abas" role="tablist">
+      <button type="button" role="tab" class="aba ativa" data-aba="pedidos" aria-selected="true">Meus pedidos</button>
+      <button type="button" role="tab" class="aba" data-aba="dados" aria-selected="false">Meus dados</button>
+    </div>
+    <div id="lista-pedidos"></div>
+    <form id="form-dados" class="formulario" novalidate hidden>
+      <label for="dados-nome">Nome completo</label>
+      <input id="dados-nome" name="nome" required />
+      <label for="dados-email">E-mail</label>
+      <input id="dados-email" name="email" type="email" required />
+      <label for="dados-telefone">Telefone (com DDD)</label>
+      <input id="dados-telefone" name="telefone" type="tel" inputmode="numeric" required />
+      <label for="dados-endereco">Endereço de entrega</label>
+      <input id="dados-endereco" name="endereco" maxlength="200" />
+      <p class="erro-form" role="alert" hidden></p>
+      <button type="submit" class="botao largo">Salvar alterações</button>
+    </form>
+    <button type="button" class="botao secundario largo" id="btn-sair">Sair da conta</button>
+  </dialog>
+
+  <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="loja.js"></script>
+</body>
+</html>

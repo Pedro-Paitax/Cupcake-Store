@@ -70,6 +70,31 @@
 
             </VerticalStackLayout>
 
+            <VerticalStackLayout Spacing="12">
+                <Button Text="SALVAR ALTERAÇÕES"
+                        Command="{Binding UpdateCommand}"
+                        BackgroundColor="#D81B60"
+                        TextColor="White"
+                        FontAttributes="Bold"
+                        CornerRadius="25"
+                        HeightRequest="50"/>
+                <ActivityIndicator IsRunning="{Binding IsBusy}" IsVisible="{Binding IsBusy}" Color="#D81B60"/>
+                <Button Text="🧾 Meus pedidos"
+                        Command="{Binding MeusPedidosCommand}"
+                        BackgroundColor="White"
+                        BorderColor="#D81B60"
+                        BorderWidth="2"
+                        TextColor="#D81B60"
+                        FontAttributes="Bold"
+                        CornerRadius="25"
+                        HeightRequest="50"/>
+                <Button Text="Sair da conta"
+                        Command="{Binding SairCommand}"
+                        BackgroundColor="Transparent"
+                        TextColor="Gray"
+                        HeightRequest="44"/>
+            </VerticalStackLayout>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

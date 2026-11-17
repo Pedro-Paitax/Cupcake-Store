@@ -1,0 +1,71 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Visão geral";
+    var maxStatus = Math.Max(1, Model.PorStatus.Values.DefaultIfEmpty(0).Max());
+}
+<header class="topo">
+    <h1>Visão geral</h1>
+    <p class="sub">Como a loja está indo agora.</p>
+</header>
+
+<section class="indicadores">
+    <article class="indicador destaque">
+        <span>Faturamento</span>
+        <strong>@Model.Faturamento.Brl()</strong>
+        <small>pedidos não cancelados</small>
+    </article>
+    <article class="indicador">
+        <span>Pedidos hoje</span>
+        <strong>@Model.PedidosHoje</strong>
+        <small>@Model.TotalPedidos no total</small>
+    </article>
+    <article class="indicador">
+        <span>Em aberto</span>
+        <strong>@Model.PedidosEmAberto</strong>
+        <small>aguardando entrega</small>
+    </article>
+    <article class="indicador">
+        <span>Clientes</span>
+        <strong>@Model.Clientes</strong>
+        <small>@Model.CupcakesAtivos cupcakes no cardápio</small>
+    </article>
+</section>
+
+<section class="grade-2">
+    <article class="cartao">
+        <h2>Pedidos por status</h2>
+        @foreach (var status in Enum.GetValues<StatusPedido>())
+        {
+            var qtd = Model.PorStatus.GetValueOrDefault(status);
+            <a class="barra-linha" asp-controller="Pedidos" asp-action="Index" asp-route-status="@status">
+                <span class="selo selo-@status.ToString().ToLower()">@status.Rotulo()</span>
+                <span class="barra"><span style="width:@(qtd * 100 / maxStatus)%"></span></span>
+                <b>@qtd</b>
+            </a>
+        }
+    </article>
+    <article class="cartao">
+        <h2>Mais vendidos</h2>
+        @if (Model.MaisVendidos.Count == 0)
+        {
+            <p class="vazio">Ainda não há vendas. Que tal fazer o primeiro pedido pela <a href="/loja/" target="_blank">loja</a>?</p>
+        }
+        else
+        {
+            <ol class="ranking">
+                @foreach (var item in Model.MaisVendidos)
+                {
+                    <li><span>@item.Nome</span><b>@item.Quantidade un.</b></li>
+                }
+            </ol>
+        }
+    </article>
+</section>
+
+<section class="cartao">
+    <div class="cartao-topo">
+        <h2>Últimos pedidos</h2>
+        <a asp-controller="Pedidos" asp-action="Index">Ver todos →</a>
+    </div>
+    <partial name="_TabelaPedidos" model="Model.UltimosPedidos" />
+</section>

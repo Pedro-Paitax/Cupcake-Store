@@ -1,0 +1,51 @@
+@{
+    var logado = User.Identity?.IsAuthenticated == true && User.IsInRole(Perfis.Admin);
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    string Ativo(string nome) => controller == nome ? "ativo" : "";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@(ViewData["Title"] is string t ? $"{t} · " : "")Cupcake Store</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=DM+Sans:wght@400;500;700&display=swap" />
+    <link rel="stylesheet" href="~/css/admin.css" asp-append-version="true" />
+    <link rel="icon" href="~/img/logo_cupcake.png" />
+</head>
+<body class="@(logado ? "com-menu" : "sem-menu")">
+    @if (logado)
+    {
+        <aside class="menu">
+            <a class="marca" asp-controller="Painel" asp-action="Index">
+                <img src="~/img/logo_cupcake.png" alt="" />
+                <span>Cupcake<br /><b>Store</b></span>
+            </a>
+            <nav>
+                <a class="@Ativo("Painel")" asp-controller="Painel" asp-action="Index">📊 Visão geral</a>
+                <a class="@Ativo("Pedidos")" asp-controller="Pedidos" asp-action="Index">🧾 Pedidos</a>
+                <a class="@Ativo("Cupcakes")" asp-controller="Cupcakes" asp-action="Index">🧁 Cardápio</a>
+                <a href="/loja/" target="_blank" rel="noopener">🛍️ Ver loja</a>
+            </nav>
+            <form asp-controller="Conta" asp-action="Sair" method="post" class="sair">
+                <span>@User.Identity!.Name</span>
+                <button type="submit" class="link">Sair</button>
+            </form>
+        </aside>
+    }
+    <main class="conteudo">
+        @if (TempData["Sucesso"] is string ok)
+        {
+            <div class="aviso sucesso" role="status">@ok</div>
+        }
+        @if (TempData["Erro"] is string erro)
+        {
+            <div class="aviso erro" role="alert">@erro</div>
+        }
+        @RenderBody()
+    </main>
+    <script src="~/js/admin.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

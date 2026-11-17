@@ -1,0 +1,16 @@
+# Deploy no Render (plano gratuito): New + → Blueprint → selecione este repositório.
+# Depois, em Environment, preencha DATABASE_URL com a connection string do Neon.
+services:
+  - type: web
+    name: cupcake-store
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: Jwt__Key
+        generateValue: true
+      - key: Admin__Senha
+        sync: false

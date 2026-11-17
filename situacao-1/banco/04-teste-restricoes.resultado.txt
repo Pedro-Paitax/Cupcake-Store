@@ -1,0 +1,39 @@
+-- Saída real de: psql -f 04-teste-restricoes.sql (PostgreSQL 16) — gerado em 01/11/2026
+-- BEGIN
+-- INSERT 0 1
+-- INSERT 0 1
+-- INSERT 0 1
+--  id |    cliente    |  status  | quantidade_itens | subtotal | taxa_entrega | total 
+-- ----+---------------+----------+------------------+----------+--------------+-------
+--   3 | Cliente Teste | Recebido |                2 |    16.00 |         5.00 | 21.00
+-- (1 row)
+-- 
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:16: ERROR:  duplicate key value violates unique constraint "uq_usuario_email"
+-- DETAIL:  Key (email)=(teste@email.com) already exists.
+-- ROLLBACK
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:20: ERROR:  new row for relation "cupcake" violates check constraint "ck_cupcake_preco"
+-- DETAIL:  Failing row contains (10, Grátis, Preço zero, 0.00, x, t, 2026-11-01 13:10:24.979854-03).
+-- ROLLBACK
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:24: ERROR:  new row for relation "pedido" violates check constraint "ck_pedido_status"
+-- DETAIL:  Failing row contains (3, 3, Perdido, 5.00, Rua A, 1, 2026-11-01 13:10:24.979854-03, 2026-11-01 13:10:24.979854-03).
+-- ROLLBACK
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:29: ERROR:  new row for relation "item_pedido" violates check constraint "ck_item_quantidade"
+-- DETAIL:  Failing row contains (5, 3, 2, 51, 9.00).
+-- ROLLBACK
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:34: ERROR:  duplicate key value violates unique constraint "uq_item_pedido_cupcake"
+-- DETAIL:  Key (pedido_id, cupcake_id)=(3, 1) already exists.
+-- ROLLBACK
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:38: ERROR:  update or delete on table "cupcake" violates foreign key constraint "fk_item_pedido_cupcake" on table "item_pedido"
+-- DETAIL:  Key (id)=(1) is still referenced from table "item_pedido".
+-- ROLLBACK
+-- SAVEPOINT
+-- psql:04-teste-restricoes.sql:42: ERROR:  insert or update on table "pedido" violates foreign key constraint "fk_pedido_usuario"
+-- DETAIL:  Key (usuario_id)=(9999) is not present in table "usuario".
+-- ROLLBACK
+-- ROLLBACK

@@ -1,0 +1,29 @@
+@model List<Pedido>
+@if (Model.Count == 0)
+{
+    <p class="vazio">Nenhum pedido por aqui.</p>
+}
+else
+{
+    <div class="tabela-rolagem">
+        <table class="tabela">
+            <thead>
+                <tr><th>#</th><th>Cliente</th><th>Data</th><th>Itens</th><th>Total</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model)
+                {
+                    <tr>
+                        <td>@p.Id</td>
+                        <td>@p.Usuario?.Nome</td>
+                        <td>@p.CriadoEm.DataHoraBr()</td>
+                        <td>@p.QuantidadeItens</td>
+                        <td>@p.Total.Brl()</td>
+                        <td><span class="selo selo-@p.Status.ToString().ToLower()">@p.Status.Rotulo()</span></td>
+                        <td><a asp-controller="Pedidos" asp-action="Detalhes" asp-route-id="@p.Id">Abrir</a></td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

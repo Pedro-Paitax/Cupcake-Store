@@ -1,0 +1,69 @@
+@model Pedido
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id}";
+    var proximos = Enum.GetValues<StatusPedido>().Where(s => Model.Status.PodeMudarPara(s)).ToList();
+}
+<header class="topo">
+    <a class="link-voltar" asp-action="Index">← Pedidos</a>
+    <h1>Pedido #@Model.Id <span class="selo selo-@Model.Status.ToString().ToLower()">@Model.Status.Rotulo()</span></h1>
+    <p class="sub">Feito em @Model.CriadoEm.DataHoraBr() · atualizado em @Model.AtualizadoEm.DataHoraBr()</p>
+</header>
+
+<section class="grade-2">
+    <article class="cartao">
+        <h2>Itens</h2>
+        <table class="tabela">
+            <thead><tr><th>Cupcake</th><th>Qtd.</th><th>Preço un.</th><th>Subtotal</th></tr></thead>
+            <tbody>
+                @foreach (var i in Model.Itens)
+                {
+                    <tr>
+                        <td class="com-foto"><img src="@Formatacao.UrlImagem(i.Cupcake?.Imagem ?? "")" alt="" />@i.Cupcake?.Nome</td>
+                        <td>@i.Quantidade</td>
+                        <td>@i.PrecoUnitario.Brl()</td>
+                        <td>@i.Subtotal.Brl()</td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr><td colspan="3">Subtotal</td><td>@Model.Subtotal.Brl()</td></tr>
+                <tr><td colspan="3">Taxa de entrega</td><td>@Model.TaxaEntrega.Brl()</td></tr>
+                <tr class="total"><td colspan="3">Total</td><td>@Model.Total.Brl()</td></tr>
+            </tfoot>
+        </table>
+    </article>
+
+    <div class="coluna">
+        <article class="cartao">
+            <h2>Entrega</h2>
+            <p><b>@Model.Usuario?.Nome</b></p>
+            <p>@Model.EnderecoEntrega</p>
+            <p class="sub">📞 @Model.Usuario?.Telefone · ✉️ @Model.Usuario?.Email</p>
+        </article>
+
+        <article class="cartao">
+            <h2>Atualizar status</h2>
+            @if (proximos.Count == 0)
+            {
+                <p class="vazio">Pedido finalizado. Não há mais mudanças possíveis.</p>
+            }
+            else
+            {
+                <div class="acoes-status">
+                    @foreach (var s in proximos)
+                    {
+                        <form asp-action="AtualizarStatus" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <input type="hidden" name="status" value="@s" />
+                            <button type="submit"
+                                    class="botao @(s == StatusPedido.Cancelado ? "perigo" : "")"
+                                    data-confirmar="@(s == StatusPedido.Cancelado ? "Cancelar este pedido? Essa ação não pode ser desfeita." : "")">
+                                @(s == StatusPedido.Cancelado ? "Cancelar pedido" : $"Marcar como \"{s.Rotulo()}\"")
+                            </button>
+                        </form>
+                    }
+                </div>
+            }
+        </article>
+    </div>
+</section>

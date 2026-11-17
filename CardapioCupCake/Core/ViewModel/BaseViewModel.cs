@@ -1,38 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace CardapioCupCake
 {
-    public class BaseViewModel : ObservableObject, INotifyPropertyChanged
+    /// <summary>
+    /// Base das ViewModels. Usa direto o ObservableObject do CommunityToolkit.
+    /// Correção do PI I: a versão anterior redeclarava o evento PropertyChanged, e por isso
+    /// as propriedades [ObservableProperty] (ex.: IsBusy, TotalValue) não atualizavam a tela.
+    /// </summary>
+    public partial class BaseViewModel : ObservableObject
     {
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected bool SetProperty<T>(
-            ref T backingStore,
-            T value,
-            [CallerMemberName] string propertyName = "")
-        {
-            if (EqualityComparer<T>.Default.Equals(backingStore, value))
-                return false;
-
-            backingStore = value;
-            OnPropertyChanged(propertyName);
-            return true;
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = "")
-        {
-            var changed = PropertyChanged;
-            if (changed == null)
-                return;
-
-            changed.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
+        [ObservableProperty]
+        private bool isBusy;
     }
 }

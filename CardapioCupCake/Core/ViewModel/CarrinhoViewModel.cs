@@ -1,91 +1,106 @@
-﻿using CardapioCupCake.Core.Models;
+using CardapioCupCake.Core.Models;
+using CardapioCupCake.Core.Service;
+using CardapioCupCake.Core.View;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Globalization;
 
 namespace CardapioCupCake.Core.ViewModel
 {
     public partial class CarrinhoViewModel : BaseViewModel
     {
-        [ObservableProperty]
-        private ObservableCollection<CupcakeModel> items = new ObservableCollection<CupcakeModel>();
+        private static readonly CultureInfo Br = new("pt-BR");
+        private readonly HubService _hubService = new();
+
+        // Mesmo valor configurado na API (Loja:TaxaEntrega). O total oficial vem da API.
+        public const double TaxaEntrega = 5.00;
+
+        public ObservableCollection<ItensModel> Items => CarrinhoService.Itens;
 
         [ObservableProperty]
-        private CadastroModel customerInfo;
+        private CadastroModel? customerInfo;
 
         [ObservableProperty]
-        private double deliveryFee = 5.00;
-        public string Name { get; set; }
-        public double Price { get; set; } 
-        public int Quantity { get; set; }
-        public double TotalPrice => Price * Quantity;
+        private string enderecoEntrega = string.Empty;
 
+        public bool CarrinhoVazio => Items.Count == 0;
+        public bool TemItens => !CarrinhoVazio;
 
-        // Propriedades formatadas para Binding no XAML
-        public string DisplaySubtotal => TotalPrice.ToString("C2");
-        public string DisplayDeliveryFee => DeliveryFee.ToString("C2");
-        public CarrinhoViewModel(List<CupcakeModel> cartItems, CadastroModel userInfo)
-        {
-            CustomerInfo = userInfo;
-            foreach (var item in cartItems)
-            {
-                Items.Add(item);
-            }
-            UpdateTotals();
-        }
+        public double Subtotal => CarrinhoService.Subtotal;
+        public double TotalPrice => CarrinhoVazio ? 0 : Subtotal + TaxaEntrega;
+
+        public string DisplaySubtotal => Subtotal.ToString("C2", Br);
+        public string DisplayDeliveryFee => TaxaEntrega.ToString("C2", Br);
+        public string DisplayTotalPrice => TotalPrice.ToString("C2", Br);
+
         public CarrinhoViewModel()
         {
-            LoadMockData();
+            CustomerInfo = Sessao.Usuario;
+            EnderecoEntrega = Sessao.Usuario?.Endereco ?? string.Empty;
+            CarrinhoService.Alterado += (_, _) => UpdateTotals();
         }
-      private void LoadMockData()
-{
-    CustomerInfo = new CadastroModel
-    {
-        Nome = "Fulano de Tal",
-    };
 
-    var mockOrderItems = new List<CupcakeModel>
-    {
-        // ATRIBUIÇÃO CORRETA:
-        new CupcakeModel {
-            Name = "Cupcake de Chocolate",
-            Price = 8.00,  
-            // TotalPrice (16.00) será CALCULADO automaticamente!
-        }, 
-        new CupcakeModel { 
-            Name = "Cupcake de Baunilha", 
-            Price = 7.00,  
-            // TotalPrice (7.00) será CALCULADO automaticamente!
-        }   
-    };
-
-    foreach (var item in mockOrderItems)
-    {
-        Items.Add(item);
-    }
-
-    UpdateTotals();
-}
-        // Método para recalcular e notificar a UI
         private void UpdateTotals()
         {
-            OnPropertyChanged(nameof(DisplaySubtotal));
-            OnPropertyChanged(nameof(DisplayDeliveryFee));
+            OnPropertyChanged(nameof(Subtotal));
             OnPropertyChanged(nameof(TotalPrice));
+            OnPropertyChanged(nameof(DisplaySubtotal));
+            OnPropertyChanged(nameof(DisplayTotalPrice));
+            OnPropertyChanged(nameof(CarrinhoVazio));
+            OnPropertyChanged(nameof(TemItens));
+        }
+
+        [RelayCommand]
+        private void IncreaseItem(ItensModel item) => CarrinhoService.AlterarQuantidade(item, +1);
+
+        [RelayCommand]
+        private void DecreaseItem(ItensModel item) => CarrinhoService.AlterarQuantidade(item, -1);
+
+        [RelayCommand]
+        private async Task AlterarEndereco()
+        {
+            var novo = await Shell.Current.DisplayPromptAsync("Endereço de entrega",
+                "Para onde vamos levar os cupcakes?", "Salvar", "Cancelar",
+                placeholder: "Rua, número, bairro", maxLength: 200, initialValue: EnderecoEntrega);
+            if (!string.IsNullOrWhiteSpace(novo)) EnderecoEntrega = novo.Trim();
         }
 
         [RelayCommand]
         private async Task FinalizeOrder()
         {
-            // Lógica para enviar o pedido ao servidor
+            if (IsBusy) return;
 
-            await Application.Current.MainPage.DisplayAlert("Pedido Enviado",
-                $"O total de {DisplaySubtotal} foi finalizado. Enviando para o endereço: {CustomerInfo.Endereco}", "OK");
+            if (CarrinhoVazio)
+            {
+                await Shell.Current.DisplayAlert("Carrinho vazio", "Escolha pelo menos um cupcake no cardápio.", "OK");
+                return;
+            }
+            if (string.IsNullOrWhiteSpace(EnderecoEntrega))
+            {
+                await AlterarEndereco();
+                if (string.IsNullOrWhiteSpace(EnderecoEntrega)) return;
+            }
+
+            IsBusy = true;
+            try
+            {
+                var (pedido, erro) = await _hubService.CriarPedidoAsync(Items, EnderecoEntrega);
+                if (pedido == null)
+                {
+                    await Shell.Current.DisplayAlert("Não foi possível finalizar", erro ?? "Tente novamente.", "OK");
+                    return;
+                }
+
+                CarrinhoService.Limpar();
+                await Shell.Current.DisplayAlert("Pedido enviado! 🎉",
+                    $"Pedido #{pedido.Id} recebido. Total de {pedido.DisplayTotal}.\nEntrega em: {pedido.EnderecoEntrega}", "Acompanhar");
+                await Shell.Current.CurrentPage.Navigation.PushAsync(new MeusPedidosPage(new MeusPedidosViewModel()));
+            }
+            finally
+            {
+                IsBusy = false;
+            }
         }
     }
 }

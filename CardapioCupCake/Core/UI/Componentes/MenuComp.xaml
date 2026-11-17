@@ -17,12 +17,11 @@
         </VerticalStackLayout>
 
         <VerticalStackLayout Grid.Column="1" Spacing="2" HorizontalOptions="Center" VerticalOptions="Center">
-            <Image
-             Source="search"
-             HeightRequest="25"
-             WidthRequest="25"
-             BackgroundColor="Transparent"/>
-            <Label Text="Busca" FontSize="10" TextColor="Gray"   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
+            <VerticalStackLayout.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnPedidosTapped" />
+            </VerticalStackLayout.GestureRecognizers>
+            <Label Text="🧾" FontSize="20" HeightRequest="25" HorizontalOptions="Center" VerticalTextAlignment="Center"/>
+            <Label Text="Pedidos" FontSize="10" TextColor="Gray"   FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center" />
         </VerticalStackLayout>
 
         <Grid Grid.Column="2" HorizontalOptions="Center" VerticalOptions="Center">
@@ -35,7 +34,7 @@
                         <TapGestureRecognizer Tapped="OnshoppingTapped" />
                     </Image.GestureRecognizers>
                 </Image>
-                <Label Text="Pedidos" FontSize="10" TextColor="Gray"  FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
+                <Label Text="Carrinho" FontSize="10" TextColor="Gray"  FontAttributes="Bold" HorizontalOptions="Center" VerticalOptions="Center"/>
             </VerticalStackLayout>
         </Grid>
 

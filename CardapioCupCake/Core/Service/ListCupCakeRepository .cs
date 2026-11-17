@@ -54,48 +54,36 @@ namespace CardapioCupCake.Core.Service
             }
         }
 
+        /// <summary>
+        /// Valida os dados do perfil antes de enviar para a API.
+        /// Correções do PI I: o campo Senha era validado como CPF (sempre falhava) e o telefone
+        /// exigia a máscara "(41) 99999-9999", mas o cadastro grava só os dígitos.
+        /// </summary>
         public async Task<bool> ValidateUserAsync(CadastroModel user)
         {
-            if (string.IsNullOrWhiteSpace(user.Nome))
-            {
-                await App.Current.MainPage.DisplayAlert("Erro", "Nome é obrigatório.", "OK");
-                return false;
-            }
+            string? erro = null;
 
-            if (string.IsNullOrWhiteSpace(user.Telefone) || !IsValidPhoneNumber(user.Telefone))
-            {
-                await App.Current.MainPage.DisplayAlert("Erro", "Número de telefone inválido.", "OK");
-                return false;
-            }
-            if (string.IsNullOrWhiteSpace(user.Email))
-            {
-                await Shell.Current.DisplayAlert("Erro!", "Por favor, preencha o e-mail.", "OK");
-                return false;
-            }
-            if (string.IsNullOrWhiteSpace(user.Endereco))
-            {
-                await Shell.Current.DisplayAlert("Erro!", "Por favor, preencha o endereço.", "OK");
-                return false;
-            }
+            if (string.IsNullOrWhiteSpace(user.Nome) || user.Nome.Trim().Length < 3)
+                erro = "Informe o nome completo.";
+            else if (string.IsNullOrWhiteSpace(user.Email) || !Regex.IsMatch(user.Email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+                erro = "Informe um e-mail válido.";
+            else if (!IsValidPhoneNumber(user.Telefone))
+                erro = "Número de telefone inválido. Use DDD + número.";
+            else if (string.IsNullOrWhiteSpace(user.Endereco))
+                erro = "Por favor, preencha o endereço.";
 
-            if (string.IsNullOrWhiteSpace(user.Senha) || !IsValidCPF(user.Senha))
+            if (erro != null)
             {
-                await App.Current.MainPage.DisplayAlert("Erro", "CPF inválido.", "OK");
+                await Shell.Current.DisplayAlert("Erro", erro, "OK");
                 return false;
             }
-
             return true;
         }
 
-        private bool IsValidPhoneNumber(string number)
+        private static bool IsValidPhoneNumber(string? number)
         {
-            var regex = new Regex(@"^\(\d{2}\) \d{4,5}-\d{4}$");
-            return regex.IsMatch(number);
-        }
-
-        private bool IsValidCPF(string cpf)
-        {
-            return cpf.Length == 14 && cpf[3] == '.' && cpf[7] == '.' && cpf[11] == '-';
+            var digitos = Regex.Replace(number ?? string.Empty, @"\D", "");
+            return digitos.Length is 10 or 11;
         }
     }
 }

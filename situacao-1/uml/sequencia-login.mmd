@@ -1,0 +1,30 @@
+sequenceDiagram
+    autonumber
+    actor U as Cliente
+    participant App as MainPage / MainViewModel
+    participant H as HubService
+    participant API as AuthApiController
+    participant S as UsuarioService
+    participant DB as PostgreSQL
+
+    U->>App: Informa e-mail e senha, toca LOGIN
+    App->>App: valida campos preenchidos
+    App->>H: LoginAsync(email, senha)
+    H->>API: POST /api/login
+    API->>S: AutenticarAsync(email, senha)
+    S->>DB: SELECT usuario WHERE email = ?
+    DB-->>S: usuário (ou nada)
+    S->>S: VerifyHashedPassword (PBKDF2)
+    alt credenciais inválidas
+        S-->>API: Falha(NaoAutorizado)
+        API-->>H: 401 "E-mail ou senha inválidos."
+        H-->>App: (false, mensagem)
+        App-->>U: Alerta com a mensagem
+    else credenciais válidas
+        S-->>API: Ok(usuario)
+        API->>API: TokenService.Gerar(usuario) → JWT (7 dias)
+        API-->>H: 200 { token, usuario }
+        H->>H: Sessao.Iniciar(token, usuario)
+        H-->>App: (true, null)
+        App-->>U: Abre o Cardápio
+    end

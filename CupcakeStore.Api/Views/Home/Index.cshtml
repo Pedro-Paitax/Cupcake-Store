@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Início";
+}
+<section class="boas-vindas">
+    <img src="~/img/logo_cupcake.png" alt="Cupcake Store" class="logo-grande" />
+    <h1>Cupcake Store</h1>
+    <p class="sub">Cupcakes artesanais, do forno para a sua porta.</p>
+    <div class="atalhos">
+        <a class="cartao-atalho" href="/loja/">
+            <span class="emoji">🛍️</span>
+            <strong>Fazer um pedido</strong>
+            <small>Loja online para clientes</small>
+        </a>
+        <a class="cartao-atalho" asp-controller="Painel" asp-action="Index">
+            <span class="emoji">🔐</span>
+            <strong>Painel administrativo</strong>
+            <small>Cardápio e pedidos</small>
+        </a>
+    </div>
+    <p class="rodape-api">API REST em <code>/api</code> · status em <a href="/health">/health</a></p>
+</section>
