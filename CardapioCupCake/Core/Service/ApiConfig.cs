@@ -6,8 +6,8 @@ namespace CardapioCupCake.Core.Service
     /// </summary>
     public static class ApiConfig
     {
-        // TROQUE pela URL que o Render gerar no deploy (mantenha a barra no final).
-        public const string UrlProducao = "https://cupcake-store.onrender.com/";
+        // Servidor próprio (Oracle Cloud) atrás do túnel Cloudflare (mantenha a barra no final).
+        public const string UrlProducao = "https://cupcake.techstartsummit.com.br/";
 
         // O emulador Android enxerga o "localhost" do PC pelo IP 10.0.2.2.
         public const string UrlLocalAndroid = "http://10.0.2.2:5080/";
