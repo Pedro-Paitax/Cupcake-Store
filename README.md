@@ -55,6 +55,7 @@ Este projeto usou o assistente de IA **Claude (Anthropic)** como apoio para gera
 
 - **Pedro Henrique Paitax**: PI II (API, painel, loja web, testes, integração do app e documentação)
 
+<<<<<<< HEAD
 ### Colaboradores do PI I
 
 <table>
@@ -69,3 +70,43 @@ Este projeto usou o assistente de IA **Claude (Anthropic)** como apoio para gera
     </td>
   </tr>
 </table>
+=======
+## 🚀 Instalação e execução
+
+### 1. Clone o repositório
+
+git clone <url-do-repositorio>
+
+
+Instalação e execução
+---------------------
+1. Clone o repositório:
+   git clone <url-do-repositorio>
+
+2. Abra a solução no __Visual Studio 2022__:
+   - Abra o arquivo .sln
+   - Selecione a plataforma alvo (Android / iOS / Windows) na __Solution Configuration__ / __Solution Platforms__
+   - Use __Rebuild Solution__ se desejar limpar o build anterior
+
+3. Execute:
+   - Clique em __Start__ ou use __Debug > Start Debugging__ para executar no emulador/dispositivo selecionado.
+
+Rodando via CLI (alternativa)
+-----------------------------
+- Restaurar pacotes:
+  dotnet restore
+
+- Build:
+  dotnet build
+
+- Executar (exemplo Android):
+  dotnet build -f net9.0-android
+  (ou use as diretivas específicas do projeto / IDE conforme necessário)
+
+Estrutura do projeto
+--------------------
+- CardapioCupCake.Core.Models — modelos (ex.: CupcakeModel)
+- CardapioCupCake.Core.Service — serviços e repositórios (ex.: ListCupCakeRepository)
+- CardapioCupCake.Core.ViewModel — ViewModels para cada View
+- CardapioCupCake.Core.View — páginas XAML (.xaml / .xaml.cs)
+- Resources / Styles — cores e estilos compartilhados
