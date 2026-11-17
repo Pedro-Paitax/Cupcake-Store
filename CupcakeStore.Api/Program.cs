@@ -4,6 +4,7 @@ using CupcakeStore.Api.Models;
 using CupcakeStore.Api.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +21,16 @@ var builder = WebApplication.CreateBuilder(args);
 var porta = Environment.GetEnvironmentVariable("PORT");
 if (!string.IsNullOrWhiteSpace(porta))
     builder.WebHost.UseUrls($"http://0.0.0.0:{porta}");
+
+// Atrás do túnel da Cloudflare a API recebe HTTP puro; o proxy informa o esquema original em X-Forwarded-Proto.
+// Sem isso, redirecionamentos (ex.: login do painel) e o cookie seguro saem como http://.
+// Confiamos em qualquer proxy porque a API só é alcançável pela rede interna do Docker (sem porta publicada).
+builder.Services.Configure<ForwardedHeadersOptions>(opcoes =>
+{
+    opcoes.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedHost;
+    opcoes.KnownNetworks.Clear();
+    opcoes.KnownProxies.Clear();
+});
 
 // ---------- Configurações ----------
 builder.Services.Configure<LojaOptions>(builder.Configuration.GetSection(LojaOptions.Secao));
@@ -59,6 +70,8 @@ builder.Services
         opcoes.SlidingExpiration = true;
         opcoes.Cookie.Name = "cupcake.admin";
         opcoes.Cookie.HttpOnly = true;
+        opcoes.Cookie.SameSite = SameSiteMode.Lax;
+        opcoes.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest; // vira Secure quando o X-Forwarded-Proto é https
     })
     .AddJwtBearer(opcoes =>
     {
@@ -82,7 +95,17 @@ builder.Services.AddAuthorization(opcoes =>
     opcoes.AddPolicy("Admin", p => p.RequireRole(Perfis.Admin)));
 
 // Os POSTs do painel usam [ValidateAntiForgeryToken]; a API (JSON + JWT) não usa cookies, então não precisa.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(opcoes =>
+{
+    // Mensagens padrão do ASP.NET vêm em inglês ("The value '' is invalid."): traduzidas para o usuário.
+    var msg = opcoes.ModelBindingMessageProvider;
+    msg.SetValueMustNotBeNullAccessor(_ => "Preencha este campo.");
+    msg.SetValueIsInvalidAccessor(valor => $"O valor '{valor}' é inválido.");
+    msg.SetAttemptedValueIsInvalidAccessor((valor, campo) => $"O valor '{valor}' não é válido para {campo}.");
+    msg.SetMissingBindRequiredValueAccessor(campo => $"O campo {campo} é obrigatório.");
+    msg.SetUnknownValueIsInvalidAccessor(campo => $"O valor informado para {campo} é inválido.");
+    msg.SetValueMustBeANumberAccessor(campo => $"O campo {campo} deve ser um número.");
+});
 
 var app = builder.Build();
 
@@ -96,6 +119,26 @@ using (var escopo = app.Services.CreateScope())
 }
 
 // ---------- Pipeline ----------
+app.UseForwardedHeaders();
+
+// Cabeçalhos de segurança em todas as respostas.
+app.Use(async (contexto, proximo) =>
+{
+    var cabecalhos = contexto.Response.Headers;
+    cabecalhos["X-Content-Type-Options"] = "nosniff";
+    cabecalhos["X-Frame-Options"] = "DENY";
+    cabecalhos["Referrer-Policy"] = "strict-origin-when-cross-origin";
+    cabecalhos["Content-Security-Policy"] =
+        "default-src 'self'; img-src 'self' data: https:; " +
+        "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; " +
+        "script-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'";
+    await proximo();
+});
+
+// HSTS só em produção (o middleware ignora requisições http).
+if (!app.Environment.IsDevelopment() && !emTeste)
+    app.UseHsts();
+
 // Tratamento global de erros: a API devolve JSON padronizado; o painel mostra uma página amigável.
 app.UseExceptionHandler(erroApp => erroApp.Run(async contexto =>
 {

@@ -92,6 +92,9 @@ public class PedidoService(AppDbContext db, IOptions<LojaOptions> opcoes)
         if (pedido is null)
             return Resultado<Pedido>.Falha(TipoErro.NaoEncontrado, "Pedido não encontrado.");
 
+        if (!Enum.IsDefined(novo))
+            return Resultado<Pedido>.Falha(TipoErro.Validacao, "Status inválido.");
+
         if (!pedido.Status.PodeMudarPara(novo))
             return Resultado<Pedido>.Falha(TipoErro.Validacao,
                 $"Não é possível mudar de \"{pedido.Status.Rotulo()}\" para \"{novo.Rotulo()}\".");
@@ -108,6 +111,10 @@ public class PedidoService(AppDbContext db, IOptions<LojaOptions> opcoes)
         var pedido = await ConsultaCompleta().FirstOrDefaultAsync(p => p.Id == id && p.UsuarioId == usuarioId);
         if (pedido is null)
             return Resultado<Pedido>.Falha(TipoErro.NaoEncontrado, "Pedido não encontrado.");
+        if (pedido.Status == StatusPedido.Cancelado)
+            return Resultado<Pedido>.Falha(TipoErro.Validacao, "Este pedido já foi cancelado.");
+        if (pedido.Status == StatusPedido.Entregue)
+            return Resultado<Pedido>.Falha(TipoErro.Validacao, "Este pedido já foi entregue e não pode ser cancelado.");
         if (pedido.Status != StatusPedido.Recebido)
             return Resultado<Pedido>.Falha(TipoErro.Validacao, "Só é possível cancelar pedidos que ainda não entraram em preparo.");
 

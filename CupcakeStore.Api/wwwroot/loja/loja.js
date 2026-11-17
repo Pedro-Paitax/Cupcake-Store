@@ -144,7 +144,10 @@
     var qtd = parseInt(qtdEl.textContent, 10);
     var acao = botao.getAttribute("data-acao");
     if (acao === "menos") qtdEl.textContent = Math.max(1, qtd - 1);
-    if (acao === "mais") qtdEl.textContent = Math.min(50, qtd + 1);
+    if (acao === "mais") {
+      qtdEl.textContent = Math.min(50, qtd + 1);
+      if (qtd >= 50) toast("O limite é de 50 unidades por cupcake.");
+    }
     if (acao === "adicionar") {
       var id = parseInt(card.getAttribute("data-id"), 10);
       adicionarAoCarrinho(id, qtd);
@@ -165,11 +168,17 @@
 
   function adicionarAoCarrinho(id, quantidade) {
     var item = estado.carrinho.filter(function (i) { return i.id === id; })[0];
-    if (item) item.quantidade = Math.min(50, item.quantidade + quantidade);
-    else estado.carrinho.push({ id: id, quantidade: quantidade });
-    salvarCarrinho();
     var c = buscarCupcake(id);
-    toast(quantidade + "× " + (c ? c.nome : "cupcake") + " no carrinho 🧁");
+    var nome = c ? c.nome : "cupcake";
+    var atual = item ? item.quantidade : 0;
+    var nova = Math.min(50, atual + quantidade);
+    var adicionadas = nova - atual;
+    if (item) item.quantidade = nova;
+    else estado.carrinho.push({ id: id, quantidade: nova });
+    salvarCarrinho();
+    if (adicionadas === 0) toast("Você já tem 50 unidades de " + nome + " no carrinho (limite por pedido).");
+    else if (adicionadas < quantidade) toast("Adicionamos " + adicionadas + "× " + nome + ": o limite é de 50 por pedido.");
+    else toast(quantidade + "× " + nome + " no carrinho 🧁");
   }
 
   function subtotalCarrinho() {
@@ -215,7 +224,10 @@
     var id = parseInt(botao.closest(".item-carrinho").getAttribute("data-id"), 10);
     var item = estado.carrinho.filter(function (i) { return i.id === id; })[0];
     var acao = botao.getAttribute("data-acao");
-    if (acao === "mais") item.quantidade = Math.min(50, item.quantidade + 1);
+    if (acao === "mais") {
+      if (item.quantidade >= 50) toast("O limite é de 50 unidades por cupcake.");
+      item.quantidade = Math.min(50, item.quantidade + 1);
+    }
     if (acao === "menos") item.quantidade -= 1;
     if (acao === "remover" || item.quantidade < 1) {
       estado.carrinho = estado.carrinho.filter(function (i) { return i.id !== id; });

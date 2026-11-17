@@ -52,7 +52,7 @@ public static class DbSeeder
         new() { Nome = "Cupcake de Limão Siciliano", Preco = 9.00m, Imagem = "limao",
                 Descricao = "Bolo com raspas e sumo de limão siciliano, com recheio ácido e doce, e cobertura de merengue suíço tostado." },
         new() { Nome = "Cupcake de Doce de Leite", Preco = 11.00m, Imagem = "doce",
-                Descricao = "Massa úmida de coco, recheada com doce de leite argentino e finalizada com flocos de coco queimado." },
+                Descricao = "Massa úmida de baunilha com coco ralado, recheada com doce de leite argentino e finalizada com flocos de coco queimado." },
         new() { Nome = "Cupcake de Café e Caramelo Salgado", Preco = 10.00m, Imagem = "caramelo",
                 Descricao = "Bolo de café intenso, coberto com um buttercream de caramelo salgado e um grão de café coberto com chocolate." },
         new() { Nome = "Cupcake de Cenoura", Preco = 9.00m, Imagem = "cenoura",

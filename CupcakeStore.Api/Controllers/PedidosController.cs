@@ -21,6 +21,13 @@ public class PedidosController(PedidoService pedidos) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AtualizarStatus(int id, StatusPedido status)
     {
+        // Um valor fora do enum (ex.: 99) não é lido como "Recebido": é recusado.
+        if (!ModelState.IsValid || !Enum.IsDefined(status))
+        {
+            TempData["Erro"] = "Status inválido.";
+            return RedirectToAction(nameof(Detalhes), new { id });
+        }
+
         var resultado = await pedidos.AtualizarStatusAsync(id, status);
         if (resultado.Sucesso)
             TempData["Sucesso"] = $"Pedido #{id} agora está \"{status.Rotulo()}\".";
